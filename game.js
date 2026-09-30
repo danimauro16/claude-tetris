@@ -168,8 +168,14 @@ function drawBlock(context, x, y, colorIndex, size, alpha) {
   context.globalAlpha = 1;
 }
 
+let gridColor = '#22222e';
+
+function readGridColor() {
+  gridColor = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim() || gridColor;
+}
+
 function drawGrid() {
-  ctx.strokeStyle = '#22222e';
+  ctx.strokeStyle = gridColor;
   ctx.lineWidth = 0.5;
   for (let c = 1; c < COLS; c++) {
     ctx.beginPath();
@@ -300,5 +306,28 @@ document.addEventListener('keydown', e => {
 });
 
 restartBtn.addEventListener('click', init);
+
+const themeToggle = document.getElementById('theme-toggle');
+const themeLabel = document.getElementById('theme-label');
+
+function applyTheme(theme) {
+  const light = theme === 'light';
+  if (light) document.documentElement.dataset.theme = 'light';
+  else delete document.documentElement.dataset.theme;
+  themeToggle.setAttribute('aria-checked', String(light));
+  themeLabel.textContent = light ? '☀️ Claro' : '🌙 Oscuro';
+  readGridColor();
+}
+
+themeToggle.addEventListener('click', () => {
+  const next = themeToggle.getAttribute('aria-checked') === 'true' ? 'dark' : 'light';
+  applyTheme(next);
+  try { localStorage.setItem('theme', next); } catch (e) {}
+  themeToggle.blur(); // evita que Space active el toggle en vez de la caída
+});
+
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+applyTheme(savedTheme);
 
 init();
